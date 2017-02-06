@@ -1,0 +1,75 @@
+---
+title: "Simulation Exercise"
+author: "Emilie Smith"
+date: "November 14, 2016"
+output: word_document
+---
+##Overview
+
+####In this project I investigated the distribution of averages of 40 exponentials with a large number of simulations to illustrate the Central Limit Theorem. I will demonstrate that as the sample size increases the distribution of averages of independent and identically distributed (IID) variables becomes that of a standard normal.
+
+## Simulation
+#### In R, the exponential distribution can be simulated with rexp(n, lambda) where lambda is the rate parameter. We were asked to investigate the distribution of averages of 40 exponentials, with lambda set to 0.2, and to perform 1000 simulations. 
+####First I will take a look at the distribution of 10, 100 and 1000 random exponentials versus the distribution of 1000 averages of 40 random exponentials.
+
+```{r, echo = TRUE}
+set.seed(10) # set the seed for reproducibility
+lambda <- 0.2 # set lambda
+n <- 40 # set number of exponentials
+ns <- 1000 #set number of simulations
+distribution <- matrix(data=rexp(n * ns, lambda), nrow = ns)
+averages <- data.frame(means=apply(distribution, 1, mean))
+
+par(mfrow=c(2,2))
+hist(rexp(10,0.2), main = "Distribution of 10 \nRandom Exponentials")
+hist(rexp(100,0.2), main = "Distribution of 100 \nRandom Exponentials")
+hist(rexp(1000,0.2), main = "Distribution of 1000 \nRandom Exponentials")
+hist(averages$means, xlab = "Means of 40 Random Exponentials",main = "Distribution of the Averages of \n40 random exponentials")
+
+
+```
+
+#### The graph shows that as the sample size increases, the distribution of random exponentials looks like an expoential curve. By contrast the distribution of the the averages of 40 random exponetials (with 1000 simulations) looks more like a normal distribution.
+
+###1)Show the sample mean and compare it to the theoretical mean of the distribution.
+
+```{r, echo = TRUE}
+theor_mean <- 1/lambda
+theor_mean
+
+sample_mean <- mean(averages$means)
+sample_mean
+```
+#### The sample mean `r sample_mean` is pretty close to the theoretical mean `r theor_mean`. 
+
+###2)Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+####The theoretical standard deviation for an exponential distribution is 1/lambda/sqrt(n), and the theoretical variance is equal to the square of the theoretical standard deviation.
+```{r, echo = TRUE}
+theor_sd <- 1/lambda/sqrt(n)
+theor_var <- theor_sd^2
+theor_var
+
+sample_var <- var(averages$means)
+sample_var
+```
+#### The theoretival variance `r theor_var` is close to the sample variance `r sample_var`.
+
+###Show that the distribution is approximately normal.
+####I will plot the distribution of of the averages of 40 random exponentials and overlay it with the normal distribution.
+```{r, echo = TRUE}
+library(ggplot2)
+ggplot(data=averages,aes(x=means))+
+  theme_bw()+
+  geom_histogram(aes(y=..density..),alpha=0.7,binwidth=.25,col="black") + 
+  ylim(c(0,0.6))+
+  stat_function(fun=dnorm,args=list(mean=theor_mean,sd=theor_sd), color="blue", size=1) +
+  geom_vline(xintercept=theor_mean,color="blue", size=1) + 
+  geom_density(colour="red", size=1) +
+  geom_vline(xintercept=sample_mean,color="red", size=1) +
+  xlab("Averages of the distribution") + ylab("Density")+
+  ggtitle("Distribution of the averages of \n40 random exponentials using 1000 simulations")
+
+```
+
+##Conclusion
+####As illustrated in the graph above, the distribution of the averages of 40 random exponentials using 1000 simulations (in red) looks very similar to the Bell curve of the theoretical normal distribution (in blue). The sample mean (red vertical line) and the theoretical mean (blue vertical line) are very close.  This illustrates the Central Limit Theorem that states that  that the sampling distribution of the mean of any independent, random variable will be normal or nearly normal, if the sample size is large enough.
